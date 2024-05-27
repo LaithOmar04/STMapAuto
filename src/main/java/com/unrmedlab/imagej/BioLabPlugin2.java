@@ -8,13 +8,14 @@
 
 package com.unrmedlab.imagej;
 
+import org.scijava.command.Command;
+import org.scijava.plugin.Plugin;
 import trainableSegmentation.WekaSegmentation;
 import trainableSegmentation.Weka_Segmentation;
 import trainableSegmentation.utils.Utils;
 
 
-import org.scijava.command.Command;
-import org.scijava.plugin.Plugin;
+
 import ij.IJ;
 import ij.ImagePlus;
 import ij.gui.GenericDialog;
@@ -36,7 +37,7 @@ import ij.plugin.filter.Analyzer;
 import ij.plugin.filter.ParticleAnalyzer;
 import ij.measure.ResultsTable;
 
-@Plugin(type = Command.class, menuPath = "Plugins>STMapAuto")
+@Plugin(type = Command.class, menuPath = "Plugins>STMapAuto2.0.0")
 public class BioLabPlugin2 implements Command {
 
 	public ImagePlus imp;
@@ -57,7 +58,6 @@ public class BioLabPlugin2 implements Command {
 	@Override
 	public void run() {
 		imp = new ImagePlus();
-		weka = new WekaSegmentation();
 		rt = new ResultsTable();
 		is = new ImageStatistics();
 		numberDialog();
@@ -197,7 +197,7 @@ public class BioLabPlugin2 implements Command {
 			File dir = new File(output_folder + getOutputFolderName(imp));
 			dir.mkdir();
 			saveSegmentation(classifier, output_folder);
-			weka = new WekaSegmentation(imp);
+			WekaSegmentation weka = new WekaSegmentation(imp);
 			if (weka.loadClassifier(classifier) == false) {
 				nullify();
 				return;
@@ -214,9 +214,10 @@ public class BioLabPlugin2 implements Command {
 	}
 
 	public void saveSegmentation(String classifier, String output_folder) {
-		WekaSegmentation sample = new WekaSegmentation();
+		WekaSegmentation sample = new WekaSegmentation(imp);
 		sample.loadClassifier(classifier);
-		ImagePlus thresholded_sample = sample.applyClassifier(imp);
+		sample.applyClassifier(false);
+		ImagePlus thresholded_sample = sample.getClassifiedImage();
 		thresholded_sample.setLut(Utils.getGoldenAngleLUT());
 
 		IJ.saveAsTiff(thresholded_sample, output_folder + getOutputFolderName(imp) + "/Thresholded");

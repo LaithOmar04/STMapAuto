@@ -1,0 +1,1 @@
+mvn install:install-file -Dfile=local-repo/Trainable_Segmentation-3.3.4.jar -DgroupId=local.trainableSegmentation -DartifactId=trainableSegmentation -Dversion=1.0 -Dpackaging=jar -DlocalRepositoryPath=local-repo
