@@ -1,3 +1,6 @@
+## **Release 2.0.0**
+- Fix plugin to be compatible with ImageJ2
+
 ## **Release 1.2.0**
 - Implemented Weka Segmentation
 - 2 new modes of operation: batch and single STMap processing.  Single map mode allows the user to generate classifiers directly. 
