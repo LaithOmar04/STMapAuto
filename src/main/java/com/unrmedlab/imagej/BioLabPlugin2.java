@@ -8,6 +8,7 @@
 
 package com.unrmedlab.imagej;
 
+import ij.ImageJ;
 import org.scijava.command.Command;
 import org.scijava.plugin.Plugin;
 import trainableSegmentation.WekaSegmentation;
@@ -283,4 +284,8 @@ public class BioLabPlugin2 implements Command {
 				.getNFrames();
 	}
 
+	public static void main(String[] args) {
+		new ImageJ();
+		new BioLabPlugin2().run();
+	}
 }
