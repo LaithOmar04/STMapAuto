@@ -15,12 +15,7 @@ import java.io.File;
 import java.util.List;
 
 public class STMapAutoGUI implements PlugIn {
-    private JPanel leftPanel = new JPanel();
-    private JPanel rightPanel = new JPanel();
-    private JPanel modePanel = new JPanel();
-    private JPanel parameterPanel = new JPanel();
-    private JPanel imagePanel = new JPanel();
-
+    public String[] modes = {"Choose mode", "Single Image Processing", "Batch Image Processing"};
     public String min = "0";
     public String max = "999999";
     public String width = ".0303";
@@ -28,7 +23,16 @@ public class STMapAutoGUI implements PlugIn {
     public String depth = "0";
     public String unit = "um";
 
-    JFrame frame = new JFrame("ImageJ Plugin UI");
+    private JFrame frame = new JFrame("ImageJ Plugin UI");
+
+    private JPanel leftPanel = new JPanel();
+    private JPanel rightPanel = new JPanel();
+    private JPanel modePanel = new JPanel();
+    private JPanel leftFillerPanel = new JPanel();
+    private JPanel rigthFillerPanel = new JPanel();
+
+        JComboBox<String> modeDropdown = new JComboBox<>(modes);
+    private JPanel parameterPanel = new JPanel();
         JLabel minLabel = new JLabel("Minimum: ");
         JLabel maxLabel = new JLabel("Maximum: ");
         JLabel unitLabel = new JLabel("Units: ");
@@ -41,21 +45,25 @@ public class STMapAutoGUI implements PlugIn {
         JTextField widthField = new JTextField(width);
         JTextField heightField = new JTextField(height);
         JTextField depthField = new JTextField(depth);
+    private JPanel imagePanel = new JPanel();
+    private JPanel filePanel = new JPanel();
+        JButton saveDataButton = new JButton("Save Data");
 
     public void run(String arg) {
         SwingUtilities.invokeLater(() -> createAndShowGUI());
     }
 
+    //TODO: Add save button,
     private void createAndShowGUI() {
         frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         frame.setSize(600, 400);
         frame.setLayout(new BorderLayout());
 
-        //TODO: put modeDropdown initialization up top with rest of j things and maybe realign modeDropdown size-changing code
+        //TODO: maybe realign modeDropdown size-changing code
 
-        String[] modes = {"Choose mode", "Single Image Processing", "Batch Image Processing"};
-        JComboBox<String> modeDropdown = new JComboBox<>(modes);
+        // Set up the dropdown combo box used for selecting the mode
         modeDropdown.setSelectedIndex(0);
+        modeDropdown.setBackground(Color.WHITE);
 
         // Custom renderer to keep "choose mode" small while allowing wider items in dropdown
         modeDropdown.setRenderer(new DefaultListCellRenderer() {
@@ -80,7 +88,7 @@ public class STMapAutoGUI implements PlugIn {
                 Object popup = modeDropdown.getUI().getAccessibleChild(modeDropdown, 0);
                 if (popup instanceof JPopupMenu) {
                     JPopupMenu popupMenu = (JPopupMenu) popup;
-                    popupMenu.setPreferredSize(new Dimension(150, 70));
+                    popupMenu.setPreferredSize(new Dimension(147, 56));
 
                     // Also ensure the list inside the popup gets resized
                     Component[] comps = popupMenu.getComponents();
@@ -119,7 +127,30 @@ public class STMapAutoGUI implements PlugIn {
         modePanel.setLayout(modeLayout);
 
         // Add the mode-choosing combo box to the mode panel
-        modePanel.add(modeDropdown);
+        modePanel.add(modeDropdown, modeConstraints);
+
+        // Set up save data button
+        saveDataButton.setToolTipText("Save current result into a TIF file");
+        saveDataButton.setBackground(Color.WHITE);
+        saveDataButton.setFocusable(false);
+        saveDataButton.setEnabled(true);
+
+        // Create filePanel and set its constraints and layout
+        filePanel.setBorder(BorderFactory.createTitledBorder("File"));
+        GridBagLayout fileLayout = new GridBagLayout();
+        GridBagConstraints fileConstraints = new GridBagConstraints();
+        fileConstraints.anchor = GridBagConstraints.NORTHWEST;
+        fileConstraints.fill = GridBagConstraints.HORIZONTAL;
+        fileConstraints.gridwidth = 1;
+        fileConstraints.gridheight = 1;
+        fileConstraints.weightx = 1.0;
+        fileConstraints.gridx = 0;
+        fileConstraints.gridy = 0;
+        fileConstraints.insets = new Insets(5, 5, 6, 6);
+        filePanel.setLayout(fileLayout);
+
+        // Add the save data button to the file panel
+        filePanel.add(saveDataButton, fileConstraints);
 
         // Create parameter panel and set its constraints and layout
         parameterPanel.setBorder(BorderFactory.createTitledBorder("Parameters"));
@@ -204,12 +235,47 @@ public class STMapAutoGUI implements PlugIn {
             }
         });
 
-        // Add the mode panel to the left panel
-        leftPanel.add(modePanel);
-        // Add the parameter panel to the right panel
-        rightPanel.add(parameterPanel);
+        // Create constraints for a filler panel that will take up all unused space beneath other panels.
+        GridBagConstraints fillerConstraints = new GridBagConstraints();
+        fillerConstraints.gridx = 0;
+        fillerConstraints.gridy = 2;
+        fillerConstraints.weighty = 1.0;
 
-        // add the left, right, and center panels to the frame
+        // Create layout and constraints for the left main panel
+        GridBagLayout leftPanelLayout = new GridBagLayout();
+        GridBagConstraints leftPanelConstraints = new GridBagConstraints();
+        leftPanelConstraints.anchor = GridBagConstraints.NORTHWEST;
+        leftPanelConstraints.fill = GridBagConstraints.HORIZONTAL;
+        leftPanelConstraints.gridwidth = 1;
+        leftPanelConstraints.gridheight = 1;
+        leftPanelConstraints.gridx = 0;
+        leftPanelConstraints.gridy = 0;
+        leftPanelConstraints.insets = new Insets(1, 5, 1, 6);
+        leftPanel.setLayout(leftPanelLayout);
+
+        // Add the mode and file panels to the left main panel
+        leftPanel.add(modePanel, leftPanelConstraints);
+        leftPanelConstraints.gridy++;
+        leftPanel.add(filePanel, leftPanelConstraints);
+        leftPanel.add(leftFillerPanel, fillerConstraints);
+
+        // Create the layout and constraints for the right main panel
+        GridBagLayout rightPanelLayout = new GridBagLayout();
+        GridBagConstraints rightPanelConstraints = new GridBagConstraints();
+        rightPanelConstraints.anchor = GridBagConstraints.NORTHWEST;
+        rightPanelConstraints.fill = GridBagConstraints.HORIZONTAL;
+        rightPanelConstraints.gridwidth = 1;
+        rightPanelConstraints.gridheight = 1;
+        rightPanelConstraints.gridx = 0;
+        rightPanelConstraints.gridy = 0;
+        rightPanelConstraints.insets = new Insets(5, 5, 6, 6);
+        rightPanel.setLayout(rightPanelLayout);
+
+        // Add the parameter panel to the right main panel
+        rightPanel.add(parameterPanel, rightPanelConstraints);
+        rightPanel.add(rigthFillerPanel, fillerConstraints);
+
+        // add the left, right, and center panels to the main frame
         frame.add(leftPanel, BorderLayout.WEST);
         frame.add(rightPanel, BorderLayout.EAST);
         frame.add(imagePanel, BorderLayout.CENTER);
