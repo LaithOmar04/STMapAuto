@@ -1,8 +1,24 @@
 package com.unrmedlab.imagej;
 
+import org.scijava.command.Command;
+import org.scijava.plugin.Plugin;
+import trainableSegmentation.WekaSegmentation;
+import trainableSegmentation.Weka_Segmentation;
+import trainableSegmentation.utils.Utils;
 
 import ij.ImageJ;
+import ij.ImagePlus;
 import ij.plugin.PlugIn;
+import ij.process.ImageConverter;
+import ij.IJ;
+import ij.gui.GenericDialog;
+import ij.gui.NonBlockingGenericDialog;
+import ij.gui.Roi;
+import ij.io.OpenDialog;
+import ij.plugin.frame.Recorder;
+import ij.plugin.frame.RoiManager;
+import ij.process.ImageStatistics;
+
 import java.awt.datatransfer.DataFlavor;
 
 import javax.swing.*;
@@ -13,15 +29,25 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
 import java.util.List;
+import java.io.FileNotFoundException;
+import java.nio.file.*;
+import java.io.IOException;
+import java.util.logging.Logger;
+
+import ij.plugin.filter.Analyzer;
+import ij.plugin.filter.ParticleAnalyzer;
+import ij.measure.ResultsTable;
+
+//TODO: make it so that images open correctly in gui, maybe add RUN button,
 
 public class STMapAutoGUI implements PlugIn {
-    public String[] modes = {"Choose mode", "Single Image Processing", "Batch Image Processing"};
-    public String min = "0";
-    public String max = "999999";
-    public String width = ".0303";
-    public String height = ".0303";
-    public String depth = "0";
-    public String unit = "um";
+    public static String[] modes = {"Choose mode", "Single Image Processing", "Batch Image Processing"};
+    public static String min = "0";
+    public static String max = "999999";
+    public static String width = ".0303";
+    public static String height = ".0303";
+    public static String depth = "0";
+    public static String unit = "um";
 
     private JFrame frame = new JFrame("ImageJ Plugin UI");
 
@@ -31,7 +57,7 @@ public class STMapAutoGUI implements PlugIn {
     private JPanel leftFillerPanel = new JPanel();
     private JPanel rigthFillerPanel = new JPanel();
 
-        JComboBox<String> modeDropdown = new JComboBox<>(modes);
+        static JComboBox<String> modeDropdown = new JComboBox<>(modes);
     private JPanel parameterPanel = new JPanel();
         JLabel minLabel = new JLabel("Minimum: ");
         JLabel maxLabel = new JLabel("Maximum: ");
@@ -39,12 +65,12 @@ public class STMapAutoGUI implements PlugIn {
         JLabel widthLabel = new JLabel("Pixel Width: ");
         JLabel heightLabel = new JLabel("Pixel Height: ");
         JLabel depthLabel = new JLabel("Voxel Depth: ");
-        JTextField minField = new JTextField(min);
-        JTextField maxField = new JTextField(max);
-        JTextField unitField = new JTextField(unit);
-        JTextField widthField = new JTextField(width);
-        JTextField heightField = new JTextField(height);
-        JTextField depthField = new JTextField(depth);
+        static JTextField minField = new JTextField(min);
+        static JTextField maxField = new JTextField(max);
+        static JTextField unitField = new JTextField(unit);
+        static JTextField widthField = new JTextField(width);
+        static JTextField heightField = new JTextField(height);
+        static JTextField depthField = new JTextField(depth);
     private JPanel imagePanel = new JPanel();
     private JPanel filePanel = new JPanel();
         JButton saveDataButton = new JButton("Save Data");
@@ -53,7 +79,6 @@ public class STMapAutoGUI implements PlugIn {
         SwingUtilities.invokeLater(() -> createAndShowGUI());
     }
 
-    //TODO: Add save button,
     private void createAndShowGUI() {
         frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         frame.setSize(600, 400);
@@ -280,6 +305,55 @@ public class STMapAutoGUI implements PlugIn {
         frame.add(rightPanel, BorderLayout.EAST);
         frame.add(imagePanel, BorderLayout.CENTER);
         frame.setVisible(true);
+
+        // TODO: JOptionPane.showMessageDialog(null, "HELLO THERE");
+    }
+
+    public static int getMinVal() {
+        return convertToInt(minField);
+    }
+    public static int getMaxVal() {
+        return convertToInt(maxField);
+    }
+    public static String getUnit() {
+        return unitField.getText();
+    }
+    public static double getWidthVal() {
+        return convertToDouble(widthField);
+    }
+    public static double getHeightVal() {
+        return convertToDouble(heightField);
+    }
+    public static double getDepthVal() {
+        return convertToDouble(depthField);
+    }
+    public static String getMode() {
+        return modeDropdown.getItemAt(modeDropdown.getSelectedIndex());
+    }
+
+    public static int convertToInt(JTextField textField) {
+        String text = textField.getText();
+        int value;
+        try {
+            value = Integer.parseInt(text);
+        } catch (NumberFormatException e) {
+            // Handle the exception, e.g., show an error message or use a default value
+            System.err.println("Invalid input: " + text + ". Please enter a valid number.");
+            value = Integer.MIN_VALUE; // Or any other default value as needed
+        }
+        return value;
+    }
+    public static double convertToDouble(JTextField textField) {
+        String text = textField.getText();
+        double value;
+        try {
+            value = Double.parseDouble(text);
+        } catch (NumberFormatException e) {
+            // Handle the exception, e.g., show an error message or use a default value
+            System.err.println("Invalid input: " + text + ". Please enter a valid number.");
+            value = Double.NaN; // Or any other default value as needed
+        }
+        return value;
     }
 
     public static void main(String[] args) {
