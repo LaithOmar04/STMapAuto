@@ -1,23 +1,7 @@
 package com.unrmedlab.imagej;
 
-import org.scijava.command.Command;
-import org.scijava.plugin.Plugin;
-import trainableSegmentation.WekaSegmentation;
-import trainableSegmentation.Weka_Segmentation;
-import trainableSegmentation.utils.Utils;
-
 import ij.ImageJ;
-import ij.ImagePlus;
 import ij.plugin.PlugIn;
-import ij.process.ImageConverter;
-import ij.IJ;
-import ij.gui.GenericDialog;
-import ij.gui.NonBlockingGenericDialog;
-import ij.gui.Roi;
-import ij.io.OpenDialog;
-import ij.plugin.frame.Recorder;
-import ij.plugin.frame.RoiManager;
-import ij.process.ImageStatistics;
 
 import java.awt.datatransfer.DataFlavor;
 
@@ -25,18 +9,12 @@ import javax.swing.*;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
 import java.util.List;
-import java.io.FileNotFoundException;
-import java.nio.file.*;
-import java.io.IOException;
-import java.util.logging.Logger;
-
-import ij.plugin.filter.Analyzer;
-import ij.plugin.filter.ParticleAnalyzer;
-import ij.measure.ResultsTable;
 
 //TODO: make it so that images open correctly in gui, maybe add RUN button,
 
@@ -160,6 +138,9 @@ public class STMapAutoGUI implements PlugIn {
         saveDataButton.setFocusable(false);
         saveDataButton.setEnabled(true);
 
+        saveDataButton.addActionListener(listener);
+
+
         // Create filePanel and set its constraints and layout
         filePanel.setBorder(BorderFactory.createTitledBorder("File"));
         GridBagLayout fileLayout = new GridBagLayout();
@@ -227,9 +208,6 @@ public class STMapAutoGUI implements PlugIn {
         imagePanel.setLayout(new BorderLayout());
         JLabel dropFileLabel = new JLabel("Drop image here or click to select file", SwingConstants.CENTER);
         imagePanel.add(dropFileLabel, BorderLayout.CENTER);
-
-
-
 
         imagePanel.setTransferHandler(new TransferHandler() {
             public boolean canImport(TransferSupport support) {
@@ -308,6 +286,18 @@ public class STMapAutoGUI implements PlugIn {
 
         // TODO: JOptionPane.showMessageDialog(null, "HELLO THERE");
     }
+
+    private ActionListener listener = new ActionListener() {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+
+            final String command = e.getActionCommand();
+
+            if(e.getSource() == saveDataButton) {
+                STMapAutoPlugin.runPlugin();
+            }
+        }
+    };
 
     public static int getMinVal() {
         return convertToInt(minField);
